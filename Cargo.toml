@@ -1,0 +1,57 @@
+[package]
+name = "silver-mobile"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+keywords = ["mobile", "wallet", "ios", "android"]
+categories = ["mobile"]
+
+[dependencies]
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+bincode.workspace = true
+blake3.workspace = true
+sha2.workspace = true
+rand.workspace = true
+rand_core.workspace = true
+zeroize.workspace = true
+thiserror.workspace = true
+anyhow.workspace = true
+tracing.workspace = true
+bytes.workspace = true
+hex.workspace = true
+
+# Cryptography
+secp256k1.workspace = true
+ed25519-dalek.workspace = true
+chacha20poly1305.workspace = true
+argon2.workspace = true
+
+# Mobile
+uniffi = { version = "0.25", features = ["cli"] }
+
+# Utilities
+parking_lot.workspace = true
+dashmap.workspace = true
+crossbeam.workspace = true
+rayon.workspace = true
+lru.workspace = true
+
+[dev-dependencies]
+proptest.workspace = true
+criterion.workspace = true
+tempfile.workspace = true
+pretty_assertions.workspace = true
+
+[[bench]]
+name = "mobile_benchmarks"
+harness = false
+
+[lib]
+name = "silver_mobile"
+path = "src/lib.rs"
+crate-type = ["cdylib", "rlib"]
