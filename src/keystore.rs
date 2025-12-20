@@ -121,7 +121,7 @@ impl Keystore {
     }
     
     /// Decrypt data
-    fn decrypt(encrypted: &[u8], key: &[u8]) -> Result<String> {
+    fn decrypt(encrypted: &[u8], _key: &[u8]) -> Result<String> {
         // In a real implementation, this would use proper encryption
         // For now, we'll just return a placeholder
         Ok(String::from_utf8_lossy(encrypted).to_string())

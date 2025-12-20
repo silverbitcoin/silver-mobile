@@ -25,7 +25,6 @@ pub use wallet::MobileWallet;
 pub use sync::SyncManager;
 pub use security::SecurityManager;
 
-use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use parking_lot::RwLock;
 
