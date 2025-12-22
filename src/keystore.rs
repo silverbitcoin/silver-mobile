@@ -120,11 +120,54 @@ impl Keystore {
         Ok(hasher.finalize().as_bytes().to_vec())
     }
     
-    /// Decrypt data
-    fn decrypt(encrypted: &[u8], _key: &[u8]) -> Result<String> {
-        // In a real implementation, this would use proper encryption
-        // For now, we'll just return a placeholder
-        Ok(String::from_utf8_lossy(encrypted).to_string())
+    /// Decrypt data using real cryptographic key derivation and ChaCha20-Poly1305
+    fn decrypt(encrypted: &[u8], key: &[u8]) -> Result<String> {
+        // REAL IMPLEMENTATION: Secure decryption with key derivation
+        // Format: [nonce (12 bytes)] [ciphertext] [tag (16 bytes)]
+        
+        if encrypted.len() < 28 {
+            return Err(MobileError::CryptoError("Encrypted data too short".to_string()));
+        }
+        
+        // Extract components
+        let nonce_bytes = &encrypted[0..12];
+        let ciphertext_and_tag = &encrypted[12..];
+        
+        // Derive key from input key using SHA-256 (HKDF-like approach)
+        use sha2::{Digest, Sha256};
+        
+        // Step 1: Extract phase - hash the input key
+        let mut hasher = Sha256::new();
+        hasher.update(key);
+        hasher.update(b"silver_keystore_extract");
+        let prk = hasher.finalize();
+        
+        // Step 2: Expand phase - generate derived key
+        let mut hasher = Sha256::new();
+        hasher.update(prk);
+        hasher.update(b"silver_keystore_expand");
+        hasher.update(nonce_bytes);
+        let derived_key_bytes = hasher.finalize();
+        
+        // Use derived key for decryption
+        let mut derived_key = [0u8; 32];
+        derived_key.copy_from_slice(&derived_key_bytes[0..32]);
+        
+        // Decrypt using ChaCha20-Poly1305
+        use chacha20poly1305::{ChaCha20Poly1305, Key, Nonce, KeyInit};
+        use chacha20poly1305::aead::Aead;
+        
+        // Create cipher with derived key
+        let cipher = ChaCha20Poly1305::new(&Key::from(derived_key));
+        let nonce = Nonce::from_slice(nonce_bytes);
+        
+        match cipher.decrypt(nonce, ciphertext_and_tag) {
+            Ok(plaintext) => {
+                String::from_utf8(plaintext)
+                    .map_err(|_| MobileError::CryptoError("Invalid UTF-8 in decrypted data".to_string()))
+            }
+            Err(_) => Err(MobileError::CryptoError("Decryption failed - invalid key or corrupted data".to_string()))
+        }
     }
 }
 
